@@ -1,6 +1,8 @@
 name: Build Caddy (x86_64, arm64)
 
 on:
+  schedule:
+    - cron: '0 0 * * 0'
   push:
     branches:
       - main

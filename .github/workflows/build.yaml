@@ -1,5 +1,11 @@
 name: Build Caddy
-on: push
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/build.yaml'
 
 env:
   CADDY_VERSION: 2.11.4
@@ -23,6 +29,7 @@ jobs:
       - name: Login to DHI
         uses: docker/login-action@v4
         with:
+          registry: dhi.io
           username: ${{ vars.DHI_USERNAME }}
           password: ${{ secrets.DHI_PAT }}
 

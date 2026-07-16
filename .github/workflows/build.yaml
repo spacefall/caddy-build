@@ -9,7 +9,28 @@ on:
       - '.github/workflows/build.yaml'
 
 jobs:
+  prep:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get latest Caddy version
+        id: get_version
+        run: |
+          set -euo pipefail
+          LATEST_VER=$(curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/caddyserver/caddy/releases/latest \
+            | jq -r ".tag_name" | sed 's/^v//')
+
+          if [[ -z "$LATEST_VER" || "$LATEST_VER" == "null" ]]; then
+            echo "ERROR: Failed to fetch Caddy version from GitHub API"
+            exit 1
+          fi
+          echo "Found version: $LATEST_VER"
+          echo "version=$LATEST_VER" >> $GITHUB_OUTPUT
+
   build:
+    needs: prep
     uses: docker/github-builder/.github/workflows/build.yml@v1
     permissions:
       contents: read
@@ -22,10 +43,9 @@ jobs:
       platforms: linux/amd64,linux/arm64
       meta-images: ghcr.io/${{ github.repository }}
       meta-tags: |
-        type=ref,event=branch
-        type=ref,event=pr
-        type=semver,pattern={{version}}
-        type=semver,pattern={{major}}.{{minor}}
+        type=raw,value=latest
+        type=raw,value=${{ needs.prep.outputs.version }}
+        type=raw,value=${{ needs.prep.outputs.version }}-{{date 'YYYYMMDD'}}
     secrets:
       registry-auths: |
         - registry: ghcr.io

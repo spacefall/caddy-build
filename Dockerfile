@@ -1,7 +1,6 @@
 ARG CADDY_VERSION=2.11.4
 FROM caddy:${CADDY_VERSION}-builder AS builder
 
-WORKDIR /build
 RUN xcaddy build \
     --with github.com/mholt/caddy-l4 \
     --with github.com/caddy-dns/cloudflare \

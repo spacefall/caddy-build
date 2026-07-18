@@ -1,6 +1,5 @@
-FROM dhi.io/golang:1.26-dev AS builder
-
-RUN CGO_ENABLED=0 go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+ARG CADDY_VERSION=2.11.4
+FROM caddy:${CADDY_VERSION}-builder AS builder
 
 WORKDIR /build
 RUN xcaddy build \
@@ -13,5 +12,19 @@ RUN xcaddy build \
     --with github.com/hslatman/caddy-crowdsec-bouncer/appsec \
     --with github.com/lucaslorentz/caddy-docker-proxy/v2
 
-FROM dhi.io/caddy:2
-COPY --from=builder /build/caddy /usr/local/bin/caddy
+# Image starts here
+FROM scratch
+
+EXPOSE 80 443 2019
+ENV XDG_CONFIG_HOME /config
+ENV XDG_DATA_HOME /data
+
+WORKDIR /
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+COPY --from=builder /usr/bin/caddy /bin/caddy
+
+ENTRYPOINT ["/bin/caddy"]
+
+CMD ["docker-proxy"]

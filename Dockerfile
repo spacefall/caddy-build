@@ -15,3 +15,4 @@ RUN xcaddy build \
 
 FROM dhi.io/caddy:2
 COPY --from=builder /build/caddy /usr/local/bin/caddy
+CMD ["docker-proxy"]

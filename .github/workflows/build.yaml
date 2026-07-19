@@ -3,6 +3,7 @@ name: Build Caddy (x86_64, arm64)
 on:
   schedule:
     - cron: '0 0 * * 0'
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -48,10 +49,10 @@ jobs:
         type=raw,value=latest
         type=raw,value=${{ needs.prep.outputs.version }}
         type=raw,value=${{ needs.prep.outputs.version }}-{{date 'YYYYMMDD'}}
+      build-args: |
+        CADDY_VERSION=${{ needs.prep.outputs.version }}
     secrets:
       registry-auths: |
         - registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-        - username: ${{ vars.DHI_USERNAME }}
-          password: ${{ secrets.DHI_PAT }}
